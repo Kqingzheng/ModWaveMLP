@@ -8,6 +8,7 @@ Because of the deviation of the experimental results by referring to the work of
 | -------- | ------------------------ | ------------------------ | ------------------------- |
 | METR-LA  | 2.68, 7.06%, 5.27        | 2.99, 8.41%, 6.22        | 3.38, 9.82%, 7.13         |
 | PEMS-BAY | 1.30, 2.82%, 2.79        | 1.59, 3.68%, 3.72        | 1.89, 4.47%, 4.38         |
+
 Specially, we also improve the model structure without relying on the wavelet transform, and the improved results are as follows:
 
 | Dataset  | 3steps@MAE, @MAPE, @RMSE | 6steps@MAE, @MAPE, @RMSE | 12steps@MAE, @MAPE, @RMSE |
