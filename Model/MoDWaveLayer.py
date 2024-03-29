@@ -17,15 +17,12 @@ class MoDWaveLayer(tf.keras.layers.Layer):
         self.hyperparams_patch = self.hyperparams_patch._replace(horizon = int(hyperparams.horizon/2))
         self.hyperparams_patch = self.hyperparams_patch._replace(history_length = int(hyperparams.history_length/2))
        
-        self.hyperparams_patch34 = copy.deepcopy(hyperparams)
-        self.hyperparams_patch34 = self.hyperparams_patch34._replace(horizon = int(hyperparams.horizon/4))
-        self.hyperparams_patch34 = self.hyperparams_patch34._replace(history_length = int(hyperparams.history_length/4))
 
         self.day_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=input_size,name="day_mdlblock")
         self.week_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=input_size,name="week_mdlblock")
         self.day_add_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=input_size,name="day_add_mdlblock")
         self.week_add_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=input_size,name="day_week_mdlblock")
-        self.final_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=self.hyperparams.history_length * 6+6,name="final_mdlblock")
+        self.final_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=self.hyperparams.history_length * 8,name="final_mdlblock")
         
         self.node_id_em = tf.keras.layers.Embedding(input_dim=self.num_nodes,
                                                     output_dim=self.hyperparams.node_id_dim,
@@ -45,32 +42,21 @@ class MoDWaveLayer(tf.keras.layers.Layer):
                                                   num_nodes=self.num_nodes,
                                                   time_gate_backcast_size=hyperparams.history_length*4,
                                                   name=f"wavelet")
-  
+        self.patch_history = []
+        for i in range(self.hyperparams_patch.history_length):
+            self.patch_history.append(Mode_Information_Coding_Block(hyperparams=self.hyperparams_patch,
+                                                     input_size=self.hyperparams_patch.horizon * self.hyperparams_patch.num_nodes + self.hyperparams_patch.node_id_dim + self.hyperparams_patch.history_length,
+                                                     output_size=self.hyperparams_patch.horizon,
+                                                     num_nodes=self.num_nodes,
+                                                     time_gate_backcast_size=self.hyperparams_patch.history_length,
+                                                     name=f"patch_{i}"))
         self.patch1_history = Mode_Information_Coding_Block(hyperparams=self.hyperparams_patch,
-                                                  input_size=self.hyperparams_patch.horizon*self.hyperparams_patch.num_nodes + self.hyperparams_patch.node_id_dim + self.hyperparams_patch.history_length,
-                                                  output_size=self.hyperparams_patch.horizon,
-                                                  num_nodes=self.num_nodes,
-                                                  time_gate_backcast_size=self.hyperparams_patch.history_length,
-                                                  name=f"patch1")
-        self.patch2_history = Mode_Information_Coding_Block(hyperparams=self.hyperparams_patch,
-                                                  input_size=self.hyperparams_patch.horizon*self.hyperparams_patch.num_nodes + self.hyperparams_patch.node_id_dim + self.hyperparams_patch.history_length,
-                                                  output_size=self.hyperparams_patch.horizon,
-                                                  num_nodes=self.num_nodes,
-                                                  time_gate_backcast_size=self.hyperparams_patch.history_length,
-                                                  name=f"patch2")
-      
-        self.patch3_history = Mode_Information_Coding_Block(hyperparams=self.hyperparams_patch34,
-                                                  input_size=self.hyperparams_patch34.horizon*self.hyperparams_patch34.num_nodes + self.hyperparams_patch34.node_id_dim + self.hyperparams_patch34.history_length,
-                                                  output_size=self.hyperparams_patch34.horizon,
-                                                  num_nodes=self.num_nodes,
-                                                  time_gate_backcast_size=self.hyperparams_patch34.history_length,
-                                                  name=f"patch3")
-        self.patch4_history = Mode_Information_Coding_Block(hyperparams=self.hyperparams_patch34,
-                                                  input_size=self.hyperparams_patch34.horizon*self.hyperparams_patch34.num_nodes + self.hyperparams_patch34.node_id_dim + self.hyperparams_patch34.history_length,
-                                                  output_size=self.hyperparams_patch34.horizon,
-                                                  num_nodes=self.num_nodes,
-                                                  time_gate_backcast_size=self.hyperparams_patch34.history_length,
-                                                  name=f"patch4")
+                                             input_size=self.hyperparams_patch.horizon * self.hyperparams_patch.num_nodes + self.hyperparams_patch.node_id_dim + self.hyperparams_patch.history_length,
+                                             output_size=self.hyperparams_patch.horizon,
+                                             num_nodes=self.num_nodes,
+                                             time_gate_backcast_size=self.hyperparams_patch.history_length,
+                                             name=f"patch_f")
+
         
 
     def call(self, history_in, node_id_in, time_of_day_in, day_in_week_in, wt1, wt2, wt3, wt4, training=False):
@@ -121,16 +107,19 @@ class MoDWaveLayer(tf.keras.layers.Layer):
         
 
   
-        patch1_backcast, patch1_forecast = self.patch1_history(history_in=history_in[:, :, :self.hyperparams_patch.horizon], node_id_in=node_id_in, time_of_day_in=time_of_day_in[:, :, :self.hyperparams_patch.horizon])
-        patch2_backcast, patch2_forecast = self.patch2_history(history_in=history_in[:, :, self.hyperparams_patch.horizon:], node_id_in=node_id_in, time_of_day_in=time_of_day_in[:, :, self.hyperparams_patch.horizon:])
-        patch12_forecast = tf.concat([patch1_forecast,patch2_forecast],axis=-1)
 
- 
-       
-        patch3_backcast, patch3_forecast = self.patch3_history(history_in=history_in[:, :, :self.hyperparams_patch34.horizon], node_id_in=node_id_in, time_of_day_in=time_of_day_in[:, :, :self.hyperparams_patch34.horizon])
-        patch4_backcast, patch4_forecast = self.patch4_history(history_in=history_in[:, :, -self.hyperparams_patch34.horizon:], node_id_in=node_id_in, time_of_day_in=time_of_day_in[:, :, -self.hyperparams_patch34.horizon:])
-        patch34_forecast = tf.concat([patch3_forecast,patch4_forecast],axis=-1)
-        patch_forecast = tf.concat([patch12_forecast,patch34_forecast],axis=-1)
+        patch_forecasts = []
+        for i in range(12 - self.hyperparams_patch.history_length):
+            patchi_backcast, patchi_forecast = self.patch_history[i](
+                history_in=history_in[:, :, i:self.hyperparams_patch.horizon + i], node_id_in=node_id_in,
+                time_of_day_in=time_of_day_in[:, :, i:self.hyperparams_patch.horizon + i])
+            patch_forecasts.append(patchi_forecast)
+
+        patchf_backcast, patchf_forecast = self.patch1_history(
+            history_in=history_in[:, :, -self.hyperparams_patch.horizon:], node_id_in=node_id_in,
+            time_of_day_in=time_of_day_in[:, :, -self.hyperparams_patch.horizon:])
+        patch_forecasts.append(patchf_forecast)
+        patch_forecast = tf.concat(patch_forecasts, axis=-1)
        
 
 
