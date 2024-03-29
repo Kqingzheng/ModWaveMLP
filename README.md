@@ -1,8 +1,21 @@
 # ModWaveMLP: MLP-Based Mode Decomposition and Wavelet Denoising Model to Defeat Complex Structures in Traffic Forecasting
 
 Code for our paper: "[ ModWaveMLP: MLP-based Mode Decomposition and Wavelet Denoising Model to Defeat Complex Structures in Traffic Forecasting]".
+#### Results Update
+Because of the deviation of the experimental results by referring to the work of previous researchers, the results are updated as follows:
 
+| Dataset  | 3steps@MAE, @MAPE, @RMSE | 6steps@MAE, @MAPE, @RMSE | 12steps@MAE, @MAPE, @RMSE |
+| -------- | ------------------------ | ------------------------ | ------------------------- |
+| METR-LA  | 2.68, 7.06%, 5.27        | 2.99, 8.41%, 6.22        | 3.38, 9.82%, 7.13         |
+| PEMS-BAY | 1.30, 2.82%, 2.79        | 1.59, 3.68%, 3.72        | 1.89, 4.47%, 4.38         |
+Specially, we also improve the model structure without relying on the wavelet transform, and the improved results are as follows:
 
+| Dataset  | 3steps@MAE, @MAPE, @RMSE | 6steps@MAE, @MAPE, @RMSE | 12steps@MAE, @MAPE, @RMSE |
+| -------- | ------------------------ | ------------------------ | ------------------------- |
+| METR-LA  | 2.70, 7.11%, 5.30        | 3.03, 8.44%, 6.24        | 3.40, 9.88%, 7.24         |
+| PEMS-BAY | 1.32, 2.86%, 2.83        | 1.63, 3.74%, 3.77        | 1.91, 4.54%, 4.44         |
+
+We are still trying out some new ideas and the experimental results will be kept up to date, so if you have any questions or suggestions, please feel free to contact us via this email (kenianqingzheng@qq.com) and we look forward to talking with you!
 ### Further reflections
 
 Wavelet Decomposition Reconstruction with Sequences
@@ -68,4 +81,3 @@ The hyperparameters of ModWaveMLP can be changed in the Parameters.py
 python run_MoDWaveMLP.py --dataset metr-la --horizon 12 --history_length 12
 python run_MoDWaveMLP.py --dataset pems-bay --horizon 12 --history_length 12
 ```
-## We're still trying to experiment with some new ideas, if you have any questions and suggestions, please feel free to contact us through this e-mail (kenianqingzheng@qq.com), looking forward to communicating with you!
