@@ -22,7 +22,7 @@ class MoDWaveLayer(tf.keras.layers.Layer):
         self.week_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=input_size,name="week_mdlblock")
         self.day_add_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=input_size,name="day_add_mdlblock")
         self.week_add_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=input_size,name="day_week_mdlblock")
-        self.final_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=self.hyperparams.history_length * 8,name="final_mdlblock")
+        self.final_mdlblock = MDLBlock(hyperparams=hyperparams, input_size=self.hyperparams.history_length * 8+6,name="final_mdlblock")
         
         self.node_id_em = tf.keras.layers.Embedding(input_dim=self.num_nodes,
                                                     output_dim=self.hyperparams.node_id_dim,
